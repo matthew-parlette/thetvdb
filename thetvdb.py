@@ -11,8 +11,23 @@ class Episode:
     def __repr__(self):
         return "["+self.episode_id+"] S"+self.season_number.zfill(2)+"E"+self.episode_number.zfill(2)+" "+self.episode_name
     
+    def __hash__(self):
+        return int(self.season_number+self.episode_number.zfill(2))
+    
     def get_name(self):
         return self.episode_name
+    
+    def get_season(self):
+        return int(self.season_number)
+    
+    def get_episode(self):
+        return int(self.episode_number)
+    
+    def get_episode_identifier(self):
+        """For this episode, return the S01E01 formatted string.
+        
+        """
+        return "S"+self.season_number.zfill(2)+"E"+self.episode_number.zfill(2)
 
 class TVShow:
     
@@ -22,6 +37,7 @@ class TVShow:
         self.language = language
         self.error_message = None
         self.episode_list = None
+        self.series_name = None
         if self.series_id is not None:
             self.refresh()
 
@@ -44,12 +60,15 @@ class TVShow:
             self.series_id = series_id
         
         #Clear some variables
-        self.episode_list = None
+        self.episode_list = dict()
+        self.series_name = None
         
         #Get the XML from thetvdb API
         series_url = "http://www.thetvdb.com/api/%s/series/%s/all/%s.xml" % (self.api_key,series_id,self.language)
         dom = minidom.parse(urllib.urlopen(series_url))
         
+        #Set the series-level variables
+        self.series_name = dom.getElementsByTagName('Series')[0].getElementsByTagName('SeriesName')[0].firstChild.data
         #Build the episode list
         for node in dom.getElementsByTagName('Episode'):
             #There must be a better way to get the data, but this works
@@ -57,8 +76,9 @@ class TVShow:
                               node.getElementsByTagName('SeasonNumber')[0].firstChild.data,
                               node.getElementsByTagName('EpisodeNumber')[0].firstChild.data,
                               node.getElementsByTagName('EpisodeName')[0].firstChild.data)
-            
-            print episode
+            if episode.get_season() not in self.episode_list:
+                self.episode_list[episode.get_season()] = dict()
+            self.episode_list[episode.get_season()][episode.get_episode()] = episode
         
         return True
     
@@ -75,3 +95,37 @@ class TVShow:
         
         """
         return self.episode_list
+    
+    def get_show_name(self):
+        """Return the show name or a blank string if it is not set.
+        
+        """
+        if self.series_name is not None:
+            return self.series_name
+        else:
+            return ""
+
+    def get_filename(self,season_number,episode_number):
+        """Returns a filename (without extension) for the given season and episode number.
+        None is returned if there is some invalud input, or if the series is not loaded.
+        
+        """
+        if self.series_id is not None and season_number in self.episode_list and episode_number in self.episode_list[season_number]:
+            episode = self.episode_list[season_number][episode_number]
+            return self.get_show_name()+"."+episode.get_episode_identifier()+"."+episode.get_name()
+        else:
+            self.set_error("Series is not loaded (call refresh()) or invalid season or episode number")
+            return None
+    
+    def get_samba_filename(self,season_number,episode_number):
+        """Return a filename (without extension) for this episode that is friendly to samba.
+        Characters replaced: ':'
+        
+        """
+        filename = self.get_filename(seasion_number,episode_number)
+        if filename is not None:
+            filename = filename.replace(":"," -")
+            return filename
+        else:
+            self.set_error("get_filename returned None")
+            return None
