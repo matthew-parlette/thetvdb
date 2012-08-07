@@ -8,6 +8,9 @@ class Episode:
         self.episode_number = episode_number
         self.episode_name = episode_name
     
+    def __repr__(self):
+        return "["+self.episode_id+"] S"+self.season_number.zfill(2)+"E"+self.episode_number.zfill(2)+" "+self.episode_name
+    
     def get_name(self):
         return self.episode_name
 
@@ -28,22 +31,35 @@ class TVShow:
         then it will be overwritten. True is returned on success, False on failure.
         
         """
+        
+        #If series_id is not passed, then use the class series_id variable
+        #If series_id is passed, then set the class series_id variable to match it
         if series_id is None:
             if self.series_id is None:
                 self.set_error("series_id is invalid")
                 return False
             else:
                 series_id = self.series_id
+        else:
+            self.series_id = series_id
         
         #Clear some variables
         self.episode_list = None
         
+        #Get the XML from thetvdb API
         series_url = "http://www.thetvdb.com/api/%s/series/%s/all/%s.xml" % (self.api_key,series_id,self.language)
-        print "url: %s" % series_url
         dom = minidom.parse(urllib.urlopen(series_url))
         
         #Build the episode list
-        #for node in dom.getElementsByTagNameNS(WEATHER_NS, 'Episode'):
+        for node in dom.getElementsByTagName('Episode'):
+            #There must be a better way to get the data, but this works
+            episode = Episode(node.getElementsByTagName('id')[0].firstChild.data,
+                              node.getElementsByTagName('SeasonNumber')[0].firstChild.data,
+                              node.getElementsByTagName('EpisodeNumber')[0].firstChild.data,
+                              node.getElementsByTagName('EpisodeName')[0].firstChild.data)
+            print episode
+        
+        return True
     
     def set_error(self,error_message = None):
         """Set the current error message when the user needs more information when a 
