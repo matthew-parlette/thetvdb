@@ -57,6 +57,7 @@ class TVShow:
                               node.getElementsByTagName('SeasonNumber')[0].firstChild.data,
                               node.getElementsByTagName('EpisodeNumber')[0].firstChild.data,
                               node.getElementsByTagName('EpisodeName')[0].firstChild.data)
+            
             print episode
         
         return True
