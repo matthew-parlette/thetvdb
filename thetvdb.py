@@ -105,24 +105,30 @@ class TVShow:
         else:
             return ""
 
-    def get_filename(self,season_number,episode_number):
+    def get_filename(self,season_number,episode_number, flags = []):
         """Returns a filename (without extension) for the given season and episode number.
         None is returned if there is some invalud input, or if the series is not loaded.
+        Flags can be provided as a list.
         
         """
         if self.series_id is not None and season_number in self.episode_list and episode_number in self.episode_list[season_number]:
             episode = self.episode_list[season_number][episode_number]
-            return self.get_show_name()+"."+episode.get_episode_identifier()+"."+episode.get_name()
+            #file_format is a list of the components, change this if you want a different file format
+            file_format = [self.get_show_name(),episode.get_episode_identifier()]
+            file_format.extend(flags)
+            file_format.append(episode.get_name())
+            return '.'.join(file_format)
         else:
             self.set_error("Series is not loaded (call refresh()) or invalid season or episode number")
             return None
     
-    def get_samba_filename(self,season_number,episode_number):
+    def get_samba_filename(self,season_number,episode_number,flags = []):
         """Return a filename (without extension) for this episode that is friendly to samba.
         Characters replaced: ':'
+        Flags can be provided as a list.
         
         """
-        filename = self.get_filename(seasion_number,episode_number)
+        filename = self.get_filename(seasion_number,episode_number,flags)
         if filename is not None:
             filename = filename.replace(":"," -")
             return filename
