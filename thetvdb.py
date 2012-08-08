@@ -12,7 +12,7 @@ class Episode:
         return "["+self.episode_id+"] S"+self.season_number.zfill(2)+"E"+self.episode_number.zfill(2)+" "+self.episode_name
     
     def __hash__(self):
-        return int(self.season_number+self.episode_number.zfill(2))
+        return int(self.season_number.zfill(2)+self.episode_number.zfill(2))
     
     def get_name(self):
         return self.episode_name
@@ -81,6 +81,14 @@ class TVShow:
             self.episode_list[episode.get_season()][episode.get_episode()] = episode
         
         return True
+    
+    def search(self,search_term,language = None):
+        """Searches thetvdb.org for search_term and returns a dictionary of results.
+        The dicationry key is the series_id, the value is the friendly show name.
+        
+        """
+        if language is None:
+            language = self.language
     
     def set_error(self,error_message = None):
         """Set the current error message when the user needs more information when a 
