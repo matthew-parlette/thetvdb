@@ -89,6 +89,23 @@ class TVShow:
         """
         if language is None:
             language = self.language
+        
+        #Initialize
+        results = dict()
+        
+        search_url = "http://www.thetvdb.com/api/GetSeries.php?seriesname=%s&language=%s" % (search_term,language)
+        search_url = search_url.replace(" ","%20")
+        dom = minidom.parse(urllib.urlopen(search_url))
+        
+        #Parse the results to build the dictionary
+        for node in dom.getElementsByTagName('Series'):
+            #There must be a better way to get the data, but this works
+            key = node.getElementsByTagName('seriesid')[0].firstChild.data
+            value = node.getElementsByTagName('SeriesName')[0].firstChild.data
+            if key not in results:
+                results[key] = value
+        
+        return results
     
     def set_error(self,error_message = None):
         """Set the current error message when the user needs more information when a 
@@ -112,6 +129,14 @@ class TVShow:
             return self.series_name
         else:
             return ""
+    
+    def get_samba_show_name(self):
+        """Return a samba-friendly name for the show.
+        
+        """
+        series_name = self.get_show_name()
+        series_name = series_name.replace(":"," -")
+        return series_name
 
     def get_filename(self,season_number,episode_number, flags = []):
         """Returns a filename (without extension) for the given season and episode number.
