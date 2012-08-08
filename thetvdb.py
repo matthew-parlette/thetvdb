@@ -144,8 +144,8 @@ class TVShow:
         Flags can be provided as a list.
         
         """
-        if self.series_id is not None and season_number in self.episode_list and episode_number in self.episode_list[season_number]:
-            episode = self.episode_list[season_number][episode_number]
+        episode = self.get_episode(season_number,episode_number)
+        if episode is not None:
             #file_format is a list of the components, change this if you want a different file format
             file_format = [self.get_show_name(),episode.get_episode_identifier()]
             file_format.extend(flags)
@@ -167,4 +167,14 @@ class TVShow:
             return filename
         else:
             self.set_error("get_filename returned None")
+            return None
+    
+    def get_episode(self,season_number,episode_number):
+        """Return the Episode object for the given season and episode number.
+        Returns None if there is an error
+        
+        """
+        if self.series_id is not None and season_number in self.episode_list and episode_number in self.episode_list[season_number]:
+            return self.episode_list[season_number][episode_number]
+        else:
             return None
