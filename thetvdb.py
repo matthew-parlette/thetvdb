@@ -1,5 +1,5 @@
 import urllib
-from xml.dom import minidom
+import xml.etree.ElementTree as ET
 
 class Episode:
     def __init__(self,episode_id,season_number,episode_number,episode_name):
@@ -65,17 +65,18 @@ class TVShow:
         
         #Get the XML from thetvdb API
         series_url = "http://www.thetvdb.com/api/%s/series/%s/all/%s.xml" % (self.api_key,series_id,self.language)
-        dom = minidom.parse(urllib.urlopen(series_url))
+        tree = ET.parse(urllib.urlopen(series_url))
+        root = tree.getroot()
         
         #Set the series-level variables
-        self.series_name = dom.getElementsByTagName('Series')[0].getElementsByTagName('SeriesName')[0].firstChild.data
+        self.series_name = root.find('Series').find('SeriesName').text
         #Build the episode list
-        for node in dom.getElementsByTagName('Episode'):
+        for series in root.iter('Episode'):
             #There must be a better way to get the data, but this works
-            episode = Episode(node.getElementsByTagName('id')[0].firstChild.data,
-                              node.getElementsByTagName('SeasonNumber')[0].firstChild.data,
-                              node.getElementsByTagName('EpisodeNumber')[0].firstChild.data,
-                              node.getElementsByTagName('EpisodeName')[0].firstChild.data)
+            episode = Episode(series.find('id').text,
+                              series.find('SeasonNumber').text,
+                              series.find('EpisodeNumber').text,
+                              series.find('EpisodeName').text)
             if episode.get_season() not in self.episode_list:
                 self.episode_list[episode.get_season()] = dict()
             self.episode_list[episode.get_season()][episode.get_episode()] = episode
@@ -95,13 +96,13 @@ class TVShow:
         
         search_url = "http://www.thetvdb.com/api/GetSeries.php?seriesname=%s&language=%s" % (search_term,language)
         search_url = search_url.replace(" ","%20")
-        dom = minidom.parse(urllib.urlopen(search_url))
+        tree = ET.parse(urllib.urlopen(search_url))
+        root = tree.getroot()
         
         #Parse the results to build the dictionary
-        for node in dom.getElementsByTagName('Series'):
-            #There must be a better way to get the data, but this works
-            key = node.getElementsByTagName('seriesid')[0].firstChild.data
-            value = node.getElementsByTagName('SeriesName')[0].firstChild.data
+        for series in root.iter('Series'):
+            key = series.find('seriesid').text
+            value =  series.find('SeriesName').text
             if key not in results:
                 results[key] = value
         
@@ -161,7 +162,7 @@ class TVShow:
         Flags can be provided as a list.
         
         """
-        filename = self.get_filename(seasion_number,episode_number,flags)
+        filename = self.get_filename(season_number,episode_number,flags)
         if filename is not None:
             filename = filename.replace(":"," -")
             return filename
