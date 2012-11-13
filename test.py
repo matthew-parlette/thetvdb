@@ -18,3 +18,6 @@ print ""
 print "Searching Voyager..."
 print tv.search("voyager")
 print ""
+print "Requesting filename with padded zeros before seasong and episode..."
+print tv.get_samba_filename("01","02")
+print ""

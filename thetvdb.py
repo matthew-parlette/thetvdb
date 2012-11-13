@@ -145,7 +145,7 @@ class TVShow:
         Flags can be provided as a list.
         
         """
-        episode = self.get_episode(season_number,episode_number)
+        episode = self.get_episode(int(season_number),int(episode_number))
         if episode is not None:
             #file_format is a list of the components, change this if you want a different file format
             file_format = [self.get_show_name(),episode.get_episode_identifier()]
@@ -175,7 +175,7 @@ class TVShow:
         Returns None if there is an error
         
         """
-        if self.series_id is not None and season_number in self.episode_list and episode_number in self.episode_list[season_number]:
-            return self.episode_list[season_number][episode_number]
+        if self.series_id is not None and int(season_number) in self.episode_list and int(episode_number) in self.episode_list[season_number]:
+            return self.episode_list[int(season_number)][int(episode_number)]
         else:
             return None
