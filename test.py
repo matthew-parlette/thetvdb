@@ -6,6 +6,8 @@ print "------------------\n"
 print "Loading Community..."
 tv = TVShow('94571')
 print ""
+print "Printing series as string..."
+print str(tv)
 print "Printing first episode filename..."
 print tv.get_filename(1,1)
 print ""

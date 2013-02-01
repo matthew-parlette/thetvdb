@@ -41,6 +41,9 @@ class TVShow:
         if self.series_id is not None:
             self.refresh()
 
+    def __repr__(self):
+      return "%s (%s, %s)" % (str(self.series_id),str(self.series_name),str(self.language))
+
     def refresh(self,series_id = None):
         """Build the episode list for the provided series id. If no series id is provided, 
         then the current class instance's series_id is used. If an episode list already exists,
