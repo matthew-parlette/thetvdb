@@ -38,6 +38,9 @@ class TVShow:
         self.error_message = None
         self.episode_list = None
         self.series_name = None
+        self.fanart_url = None
+        self.poster_url = None
+        self.media_prefix = "http://www.thetvdb.com/banners/"
         if self.series_id is not None:
             self.refresh()
 
@@ -73,6 +76,8 @@ class TVShow:
         
         #Set the series-level variables
         self.series_name = root.find('Series').find('SeriesName').text
+        self.fanart_url = self.media_prefix + root.find('Series').find('fanart').text
+        self.poster_url = self.media_prefix + root.find('Series').find('poster').text
         #Build the episode list
         for series in root.iter('Episode'):
             #There must be a better way to get the data, but this works
